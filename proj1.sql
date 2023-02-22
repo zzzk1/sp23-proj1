@@ -96,25 +96,59 @@ AS
 -- Question 3i
 CREATE VIEW q3i(playerid, namefirst, namelast, yearid, slg)
 AS
-  SELECT 1, 1, 1, 1, 1 -- replace this line
+  SELECT people.playerid,
+  people.namefirst,
+  people.namelast,
+  yearid,
+  ((H - H2B - H3B - HR) + (2 * H2B) + (3 * H3B) + (4 * HR) + 0.0) / AB as slg
+FROM people
+  INNER JOIN batting ON people.playerid = batting.playerid
+WHERE ab > 50
+ORDER BY slg desc,
+  yearid,
+  people.playerid
+LIMIT 10;
 ;
 
 -- Question 3ii
 CREATE VIEW q3ii(playerid, namefirst, namelast, lslg)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  SELECT people.playerid,
+  people.namefirst,
+  people.namelast,
+  (
+    SUM(H - H2B - H3B - HR) + SUM(2 * H2B) + SUM(3 * H3B) + SUM(4 * HR) + 0.0
+  ) / SUM(AB) as slg
+FROM people
+  INNER JOIN batting ON people.playerid = batting.playerid
+GROUP BY people.playerid
+HAVING SUM(AB) > 50
+ORDER BY slg desc,
+  yearid,
+  people.playerid
+LIMIT 10;
 ;
 
 -- Question 3iii
 CREATE VIEW q3iii(namefirst, namelast, lslg)
 AS
-  SELECT 1, 1, 1 -- replace this line
-;
+  SELECT SELECT people.namefirst, people.namelast, (SUM(H-H2B-H3B-HR) + SUM(2*H2B) + SUM(3*H3B) + SUM(4*HR)+0.0) / SUM(AB) as slg
+FROM people INNER JOIN batting ON people.playerid = batting.playerid
+GROUP BY people.playerid
+HAVING SUM(AB) > 50 AND slg > (SELECT (SUM(H-H2B-H3B-HR) + SUM(2*H2B) + SUM(3*H3B) + SUM(4*HR)+0.0) / SUM(AB) as slg
+FROM people INNER JOIN batting ON people.playerid = batting.playerid
+WHERE nameFirst = 'Willie' AND nameLast = 'Mays'
+)
+ORDER BY slg desc, people.playerid;
+
 
 -- Question 4i
 CREATE VIEW q4i(yearid, min, max, avg)
 AS
-  SELECT 1, 1, 1, 1 -- replace this line
+  SELECT yearid, MIN(salary) AS mindiff, MAX(salary)maxdiff, AVG(salary)avgdiff
+FROM salaries
+GROUP BY yearID
+ORDER BY yearid;
 ;
 
 -- Question 4ii
@@ -132,10 +166,19 @@ AS
 -- Question 4iv
 CREATE VIEW q4iv(playerid, namefirst, namelast, salary, yearid)
 AS
-  SELECT 1, 1, 1, 1, 1 -- replace this line
+  SELECT people.playerid, people.namefirst, people.namelast,salary,yearid
+FROM salaries, people
+WHERE (yearID = 2000 OR yearID = 2001) AND people.playerID = salaries.playerID
+ORDER BY salary DESC
+LIMIT 2;
 ;
 -- Question 4v
 CREATE VIEW q4v(team, diffAvg) AS
-  SELECT 1, 1 -- replace this line
-;
+ SELECT a.teamid, (max(salary) - min(salary)) as diffAvg
+  FROM AllstarFull a INNER JOIN salaries s
+  ON a.playerid = s.playerid
+  AND a.yearid = s.yearid
+  WHERE a.yearid = 2016
+  GROUP BY a.teamid
+  ORDER BY a.teamid
 
